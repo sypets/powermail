@@ -1,0 +1,86 @@
+{namespace vh=In2code\Powermail\ViewHelpers}
+{namespace core=TYPO3\CMS\Core\ViewHelpers}
+{namespace be=TYPO3\CMS\Backend\ViewHelpers}
+
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<f:translate key="BackendOverviewTable">Forms</f:translate>
+		(<f:count subject="{forms}" />)
+	</div>
+	<div class="table-fit">
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th nowrap="nowrap" class="col-icon">
+						&nbsp;
+					</th>
+					<th nowrap="nowrap">
+						<f:translate key="BackendOverviewCol1">Form Title</f:translate>
+					</th>
+					<th nowrap="nowrap">
+						<f:translate key="BackendOverviewCol2">Stored on Page</f:translate>
+					</th>
+					<th nowrap="nowrap">
+						<f:translate key="BackendOverviewCol3">Used on Page</f:translate>
+					</th>
+					<th nowrap="nowrap">
+						<f:translate key="BackendOverviewCol4">Powermail Pages</f:translate>
+					</th>
+					<th nowrap="nowrap">
+						<f:translate key="BackendOverviewCol5">Powermail Fields</f:translate>
+					</th>
+					<th nowrap="nowrap">
+						&nbsp;
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<f:for each="{forms}" as="form" iteration="iteration">
+
+					<f:comment>Basic form information</f:comment>
+					<tr class="{f:if(condition:iteration.isFirst,then:' firstcol')}{f:if(condition:iteration.isLast,then:' lastcol')}">
+						<td nowrap="nowrap" class="col-icon" title="id={form.uid}">
+							<core:Icon identifier="tcarecords-tx_powermail_domain_model_mail-default" />
+						</td>
+						<td nowrap="nowrap">
+                            <be:link.editRecord uid="{form.uid}" table="tx_powermail_domain_model_form">
+								<span title="id={form.uid}">{form.title}</span>
+                            </be:link.editRecord>
+						</td>
+						<td nowrap="nowrap">
+							<a title="id={form.pid}" href="{f:be.uri(route:'web_layout',parameters:'{id:form.pid}')}">
+								<vh:getter.getPageNameFromUid uid="{form.pid}" />
+							</a>
+						</td>
+						<td nowrap="nowrap">
+							<f:for each="{vh:getter.getPagesWithContentRelatedToForm(form:form)}" as="page">
+								<a title="id={page.uid}" href="{f:be.uri(route:'web_layout',parameters:'{id:page.uid}')}">
+									{page.title}
+								</a>
+								<br />
+							</f:for>
+						</td>
+						<td nowrap="nowrap">
+							<span title="{vh:string.implodeField(objects:form.pages, field:'title', separator:', ')}">
+								<f:count>{form.pages}</f:count> <f:translate key="BackendOverviewPages">Pages</f:translate>
+							</span>
+						</td>
+						<td nowrap="nowrap">
+							<span title="{vh:string.implodeField(objects:'{vh:getter.getFieldsFromForm(form:form)}', separator:', ')}">
+								<f:count><vh:getter.getFieldsFromForm form="{form}" /></f:count> <f:translate key="BackendOverviewFields">Fields</f:translate>
+							</span>
+						</td>
+
+						<td nowrap="nowrap" class="col-control">
+							<div role="group" class="btn-group">
+                                <be:link.editRecord uid="{form.uid}" table="tx_powermail_domain_model_form">
+                                    <core:Icon identifier="actions-open" />
+								</be:link.editRecord>
+							</div>
+						</td>
+					</tr>
+				</f:for>
+			</tbody>
+		</table>
+	</div>
+</div>

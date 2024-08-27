@@ -1,0 +1,42 @@
+{namespace vh=In2code\Powermail\ViewHelpers}
+<f:layout name="Module" />
+
+	Show Backend Module: Overview
+	{forms}         Powermail Forms
+
+<f:section name="Content">
+
+    <f:render partial="Module/JsAndCssImport" arguments="{_all}" />
+
+    <h1><f:translate key="BackendSelectionOverview">Form Overview</f:translate></h1>
+
+	<f:if condition="{pid} > 0">
+		<f:then>
+			<p>
+				<f:translate key="BackendOverviewTitle2">All Forms within page</f:translate>
+				<strong>{vh:getter.getPageNameFromUid(uid:pid)}</strong>
+				<f:translate key="BackendOverviewTitle3">(and its subpages)</f:translate>
+			</p>
+			<p>
+				<f:link.action action="overviewBe" additionalParams="{id:0}" class="btn btn-primary">
+					<f:translate key="BackendOverviewTitle4">Show All</f:translate>
+				</f:link.action>
+			</p>
+		</f:then>
+		<f:else>
+			<p><f:translate key="BackendOverviewTitle5"><strong>All Forms from all Pages</strong></f:translate></p>
+		</f:else>
+	</f:if>
+
+	<div class="powermail_overview">
+		<f:if condition="{forms}">
+			<f:then>
+				<f:render partial="Module/OverviewBe" arguments="{_all}" />
+			</f:then>
+			<f:else>
+				<f:translate key="BackendOverviewNoForms">No Forms to show</f:translate>
+			</f:else>
+		</f:if>
+	</div>
+
+</f:section>

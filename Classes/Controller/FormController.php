@@ -398,6 +398,16 @@ class FormController extends AbstractController
         } catch (Throwable $exception) {
             $logger = ObjectUtility::getLogger(__CLASS__);
             $logger->critical('Mail could not be sent', [$exception->getMessage()]);
+
+            /**
+             * 13.08.2024 Sybille Peters - immer Fehler anzeigen, wenn E-Mail Versand fehl schlägt
+             */
+            $this->addFlashMessage(
+                LocalizationUtility::translate('error_mail_not_created'),
+                '',
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
+            );
+            $this->messageClass = 'error';
         }
     }
 

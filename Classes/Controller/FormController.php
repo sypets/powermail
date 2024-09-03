@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace In2code\Powermail\Controller;
 
 use Exception;
+use http\Exception\RuntimeException;
 use In2code\Powermail\DataProcessor\DataProcessorRunner;
 use In2code\Powermail\Domain\Factory\MailFactory;
 use In2code\Powermail\Domain\Model\Form;
@@ -32,6 +33,7 @@ use In2code\Powermail\Utility\LocalizationUtility;
 use In2code\Powermail\Utility\ObjectUtility;
 use In2code\Powermail\Utility\SessionUtility;
 use In2code\Powermail\Utility\TemplateUtility;
+use TYPO3\CMS\Core\Site\Entity\SiteLanguage;
 use function in_array;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
@@ -299,6 +301,13 @@ class FormController extends AbstractController
      */
     public function createAction(Mail $mail, string $hash = ''): ResponseInterface
     {
+        /** @var SiteLanguage|null $language */
+        $language = $this->request->getAttributes()['language'] ?? null;
+        $langUid = 0;
+        if ($language) {
+            $langUid = $language->getLanguageId();
+        }
+
         $event = GeneralUtility::makeInstance(FormControllerCreateActionBeforeRenderViewEvent::class, $mail, $hash, $this);
         $this->eventDispatcher->dispatch($event);
         $mail = $event->getMail();
@@ -326,16 +335,37 @@ class FormController extends AbstractController
         }
 
         if ($this->isNoOptin($mail, $hash)) {
+            // mail to sender + receiver
             $this->sendMailPreflight($mail, $hash);
         } else {
-            $mailPreflight = GeneralUtility::makeInstance(
-                SendOptinConfirmationMailPreflight::class,
-                $this->settings,
-                $this->conf,
-                $this->request
-            );
-            $mailPreflight->sendOptinConfirmationMail($mail);
-            $this->view->assign('optinActive', true);
+            // optin mail
+            try {
+                $mailPreflight = GeneralUtility::makeInstance(
+                    SendOptinConfirmationMailPreflight::class,
+                    $this->settings,
+                    $this->conf,
+                    $this->request
+                );
+                $mailPreflight->sendOptinConfirmationMail($mail);
+                $this->view->assign('optinActive', true);
+            } catch (\Throwable $e) {
+                if ($langUid === 0) {
+                    $message = sprintf('Es konnte keine E-Mail an <%s> geschickt werden.
+                        Prüfen Sie bitte, ob Sie die korrekte E-Mail Adresse eingegeben haben und schicken das Formular erneut ab!',
+                        $mail->getSenderMail());
+                } else {
+                    $message = sprintf('An E-Mail to <%s> could not be sent.
+                        Please check if you entered the correct E-Mail address and submit the form again!',
+                        $mail->getSenderMail());
+                }
+
+                $this->addFlashMessage(
+                    $message,
+                    '',
+                    \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
+                );
+                $this->messageClass = 'error';
+            }
         }
         if ($this->isMailPersistActive($hash) && $isSavingOfMailAllowed) {
             $this->mailRepository->update($mail);
@@ -366,19 +396,62 @@ class FormController extends AbstractController
      * @param Mail $mail
      * @param string $hash
      * @return void
+     *
+     * !!! Anpassungen 23.09.2024 Sybille Peters - wir schicken jetzt 3 emails:
+     *   1. Testmail an Sender (außer bei optin)
+     *   2. E-Mail an Empfänger
+     *   3. Email an Sender - Bestätigung
      */
     protected function sendMailPreflight(Mail $mail, string $hash = ''): void
     {
-        try {
-            if ($this->isSenderMailEnabled() && $this->mailRepository->getSenderMailFromArguments($mail)) {
-                $mailPreflight = GeneralUtility::makeInstance(
-                    SendSenderMailPreflight::class,
-                    $this->settings,
-                    $this->conf,
-                    $this->request
+        /** @var SiteLanguage|null $language */
+        $language = $this->request->getAttributes()['language'] ?? null;
+        $langUid = 0;
+        if ($language) {
+            $langUid = $language->getLanguageId();
+        }
+        $hasOptin = (bool) ($this->settings['main']['optin']);
+
+
+        // (test) mail to sender (is not necessary, if double optin is being used)
+        if (!$hasOptin) {
+            try {
+                if ($this->mailRepository->getSenderMailFromArguments($mail)) {
+                    $mailPreflight = GeneralUtility::makeInstance(
+                        SendSenderMailPreflight::class,
+                        $this->settings,
+                        $this->conf,
+                        $this->request
+                    );
+                    if (!$mailPreflight->sendSenderTestMail($mail)) {
+                        throw new RuntimeException('Sending test mail to sender failed!');
+                    }
+                }
+            } catch (Throwable $exception) {
+                $logger = ObjectUtility::getLogger(__CLASS__);
+                $logger->critical('Test Mail to sender could not be sent', [$exception->getMessage()]);
+
+                if ($langUid === 0) {
+                    $message = sprintf('Es konnte keine Test E-Mail an Formularausfüller <%s> geschickt werden.
+                            Prüfen Sie bitte, ob Sie die korrekte E-Mail Adresse eingegeben haben und schicken das Formular erneut ab!',
+                        $mail->getSenderMail());
+                } else {
+                    $message = sprintf('A test E-Mail to the email given in the form <%s> could not be sent.
+                            Please check if you entered the correct E-Mail address and submit the form again!',
+                        $mail->getSenderMail());
+                }
+                $this->addFlashMessage(
+                    $message,
+                    '',
+                    \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
                 );
-                $mailPreflight->sendSenderMail($mail);
+                $this->messageClass = 'error';
+                return;
             }
+        }
+
+        // mail to receiver
+        try {
             if ($this->isReceiverMailEnabled()) {
                 $mailPreflight = GeneralUtility::makeInstance(
                     SendReceiverMailPreflight::class,
@@ -387,28 +460,71 @@ class FormController extends AbstractController
                 );
                 $isSent = $mailPreflight->sendReceiverMail($mail, $hash);
                 if ($isSent === false) {
-                    $this->addFlashMessage(
-                        LocalizationUtility::translate('error_mail_not_created'),
-                        '',
-                        \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
-                    );
-                    $this->messageClass = 'error';
+                    throw new \RuntimeException('Email to receiver could not be sent!');
                 }
             }
         } catch (Throwable $exception) {
             $logger = ObjectUtility::getLogger(__CLASS__);
             $logger->critical('Mail could not be sent', [$exception->getMessage()]);
 
-            /**
-             * 13.08.2024 Sybille Peters - immer Fehler anzeigen, wenn E-Mail Versand fehl schlägt
-             */
+            if ($langUid === 0) {
+                $message = 'Fataler Fehler: Die E-Mail an den Empfänger konnte nicht geschickt werden!'
+                . ' Häufig deutet dies auf eine fehlerhafte Konfiguration hin. Bitte nehmen Sie mit der auf der Formularseite genannten Personen Kontakt auf.';
+            } else {
+                $message = 'Fatal error: Email to receiver could not be sent!'
+                    . ' Often, this means that the form was configured incorrectly. Please notify the persons listed as contact on this webpage';
+            }
             $this->addFlashMessage(
-                LocalizationUtility::translate('error_mail_not_created'),
+                $message,
+                '',
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
+            );
+            $this->messageClass = 'error';
+
+            // send error notification email
+            $mailPreflight = GeneralUtility::makeInstance(
+                SendSenderMailPreflight::class,
+                $this->settings,
+                $this->conf,
+                $this->request
+            );
+            $mailPreflight->sendToSenderReceiverMailFailed($mail, 'E-Mail to receiver failed');
+            return;
+        }
+
+        // (confirmation) mail to sender
+        try {
+            if ($this->isSenderMailEnabled() && $this->mailRepository->getSenderMailFromArguments($mail)) {
+                $mailPreflight = GeneralUtility::makeInstance(
+                    SendSenderMailPreflight::class,
+                    $this->settings,
+                    $this->conf,
+                    $this->request
+                );
+                if (!$mailPreflight->sendSenderMail($mail)) {
+                    throw new RuntimeException('Sending confirmation mail to sender failed!');
+                }
+            }
+        } catch (Throwable $exception) {
+            $logger = ObjectUtility::getLogger(__CLASS__);
+            $logger->critical('Confirmation Mail to sender could not be sent', [$exception->getMessage()]);
+
+            if ($langUid === 0) {
+                $message = sprintf('Es konnte keine Bestätigungs-E-Mail an den Formularausfüller <%s> geschickt werden!',
+                    $mail->getSenderMail());
+            } else {
+                $message = sprintf('A confirmation E-Mail could not be sent to the email given in the form <%s>!',
+                    $mail->getSenderMail());
+            }
+            $this->addFlashMessage(
+                $message,
                 '',
                 \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
             );
             $this->messageClass = 'error';
         }
+
+
     }
 
     /**

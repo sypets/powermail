@@ -57,7 +57,7 @@ class SendSenderMailPreflight
      * @throws InvalidConfigurationTypeException
      * @throws ExceptionExtbaseObject
      */
-    public function sendSenderMail(Mail $mail): void
+    public function sendSenderMail(Mail $mail): bool
     {
         $senderService = GeneralUtility::makeInstance(SenderMailPropertiesService::class, $this->settings);
         $email = [
@@ -79,6 +79,66 @@ class SendSenderMailPreflight
                 'L' => FrontendUtility::getSysLanguageUid(),
             ],
         ];
-        $this->sendMailService->sendMail($email, $mail, $this->settings, 'sender');
+        return $this->sendMailService->sendMail($email, $mail, $this->settings, 'sender');
     }
+
+    /**
+     * @param Mail $mail
+     * @return void
+     * @throws InvalidConfigurationTypeException
+     * @throws ExceptionExtbaseObject
+     */
+    public function sendSenderTestMail(Mail $mail): bool
+    {
+        $senderService = GeneralUtility::makeInstance(SenderMailPropertiesService::class, $this->settings);
+        $email = [
+            'template' => 'Mail/SenderTestMail',
+            'receiverEmail' => $this->mailRepository->getSenderMailFromArguments($mail),
+            'receiverName' => '',
+            'senderEmail' => 'noreply@uol.de',
+            'senderName' => '',
+            'replyToEmail' => $senderService->getSenderEmail(),
+            'replyToName' => $senderService->getSenderName(),
+            'subject' => 'Test E-Mail - ' . $this->settings['sender']['subject'],
+            'rteBody' => $this->settings['sender']['body'],
+            'format' => $this->settings['sender']['mailformat'],
+            'variables' => [
+                'hashDisclaimer' => HashUtility::getHash($mail, 'disclaimer'),
+                'L' => FrontendUtility::getSysLanguageUid(),
+            ],
+        ];
+        return $this->sendMailService->sendMail($email, $mail, $this->settings, 'sender');
+    }
+
+
+    /**
+     * @param Mail $mail
+     * @return void
+     * @throws InvalidConfigurationTypeException
+     * @throws ExceptionExtbaseObject
+     */
+    public function sendToSenderReceiverMailFailed(Mail $mail, string $message): bool
+    {
+        $senderService = GeneralUtility::makeInstance(SenderMailPropertiesService::class, $this->settings);
+        $email = [
+            'template' => 'Mail/SenderMailToReceiverFailed',
+            'receiverEmail' => $this->mailRepository->getSenderMailFromArguments($mail),
+            'receiverName' => '',
+            'senderEmail' => 'noreply@uol.de',
+            'senderName' => '',
+            'replyToEmail' => $senderService->getSenderEmail(),
+            'replyToName' => $senderService->getSenderName(),
+            'subject' => 'E-Mail failed - E-Mail Fehler (' . $this->settings['sender']['subject'] . ')',
+            'rteBody' => $this->settings['sender']['body'],
+            'format' => $this->settings['sender']['mailformat'],
+            'variables' => [
+                'hashDisclaimer' => HashUtility::getHash($mail, 'disclaimer'),
+                'L' => FrontendUtility::getSysLanguageUid(),
+                'message' => $message
+            ],
+        ];
+        return $this->sendMailService->sendMail($email, $mail, $this->settings, 'sender');
+    }
+
+
 }

@@ -99,7 +99,7 @@ class SendSenderMailPreflight
             'senderName' => '',
             'replyToEmail' => $senderService->getSenderEmail(),
             'replyToName' => $senderService->getSenderName(),
-            'subject' => 'Test E-Mail - ' . $this->settings['sender']['subject'],
+            'subject' => 'Test E-Mail', //. $this->settings['sender']['subject'],
             'rteBody' => $this->settings['sender']['body'],
             'format' => $this->settings['sender']['mailformat'],
             'variables' => [

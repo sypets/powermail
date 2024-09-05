@@ -6,8 +6,14 @@
 			<trans-unit id="sendMailToReceiverFailedMessage" resname="sendMailToReceiverFailedMessage">
 				<target>E-Mail an Empfänger ist fehlgeschlagen</target>
 			</trans-unit>
+			<trans-unit id="senderTestMail.info" resname="senderTestMail.info">
+				<target>Dies ist eine Test-E-mail, um die E-Mail Adresse zu verifizieren. Es ist keine Bestätigungs-E-Mail. Sie bekommen diese E-Mail, da Sie folgendes Formular ausgefüllt haben:</target>
+			</trans-unit>
+			<trans-unit id="senderTestMail.your_data" resname="senderTestMail.your_data">
+				<source>Ihre Daten:</source>
+			</trans-unit>
 			<trans-unit id="form" resname="form">
-				<source>Onlinee-Formular</source>
+				<target>Online-Formular</target>
 			</trans-unit>
 		</body>
 	</file>

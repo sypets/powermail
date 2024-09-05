@@ -1,10 +1,12 @@
 {namespace vh=In2code\Powermail\ViewHelpers}
 <f:layout name="Mail" />
 <f:section name="main">
+    <f:translate key="LLL:EXT:powermail/Resources/Private/Language/locallang_uol.xlf:senderTestMail.info"></f:translate> <f:link.page absolute="1"><f:translate key="LLL:EXT:powermail/Resources/Private/Language/locallang_uol.xlf:form">Online-Formular!</f:translate></f:link.page>
+    <br/><br/>
+    <b><f:translate key="LLL:EXT:powermail/Resources/Private/Language/locallang_uol.xlf:senderTestMail.your_data"></f:translate></b>
 	<vh:misc.variables mail="{mail}" type="mail" function="sender">
 		<f:format.html parseFuncTSPath="lib.parseFunc_powermail">{powermail_all}</f:format.html>
 	</vh:misc.variables>
     <hr>
-    <f:link.page absolute="1"><f:translate key="EXT:powermail/Resources/Private/Language/locallang_uol.xlf:form" extensionName="unioltemplate">Online-Formular</f:translate></f:link.page>
 	<f:render partial="Mail/DisclaimerLink" arguments="{_all}" />
 </f:section>

@@ -6,6 +6,12 @@
 			<trans-unit id="sendMailToReceiverFailedMessage" resname="sendMailToReceiverFailedMessage">
 				<source>Mail to receiver failed</source>
 			</trans-unit>
+			<trans-unit id="senderTestMail.info" resname="senderTestMail.info">
+				<source>This is a test mail to verify the E-Mail address. It is not a confirmation mail. You are receiving this e-mail because you filled out the following form:</source>
+			</trans-unit>
+			<trans-unit id="senderTestMail.your_data" resname="senderTestMail.your_data">
+				<source>Your data:</source>
+			</trans-unit>
 			<trans-unit id="form" resname="form">
 				<source>Online Form</source>
 			</trans-unit>

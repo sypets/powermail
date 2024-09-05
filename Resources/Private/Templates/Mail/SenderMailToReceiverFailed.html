@@ -1,6 +1,7 @@
 {namespace vh=In2code\Powermail\ViewHelpers}
 <f:layout name="Mail" />
-
 <f:section name="main">
-    Mail to receiver failed: {message}
+    <f:translate key="EXT:powermail/Resources/Private/Language/locallang_uol.xlf:sendMailToReceiverFailedMessage">Mail to receiver failed</f:translate><f:if condition="{message}">: {message}</f:if>
+    <hr>
+    <f:link.page absolute="1"><f:translate key="EXT:powermail/Resources/Private/Language/locallang_uol.xlf:form" extensionName="unioltemplate">Online-Formular</f:translate></f:link.page>
 </f:section>

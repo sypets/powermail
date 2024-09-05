@@ -82,15 +82,16 @@ class SenderMailPropertiesService
      */
     public function getSenderName(): string
     {
+        $senderName = '';
         if ($this->settings['sender']['name'] !== '') {
             $senderName = $this->settings['sender']['name'];
         } else {
-            $senderName = ConfigurationUtility::getDefaultMailFromName();
-            $senderName = TypoScriptUtility::overwriteValueFromTypoScript(
-                $senderName,
-                $this->configuration['sender.']['default.'],
-                'senderName'
-            );
+                $senderName = ConfigurationUtility::getDefaultMailFromName();
+                $senderName = TypoScriptUtility::overwriteValueFromTypoScript(
+                    $senderName,
+                    $this->configuration['sender.']['default.'],
+                    'senderName'
+                );
         }
 
         /** @var SenderMailPropertiesGetSenderNameEvent $event */

@@ -412,7 +412,7 @@ class MailRepository extends AbstractRepository
      * @return string Sender Name
      * @throws DeprecatedException
      */
-    public function getSenderNameFromArguments(Mail $mail, $default = null, string $glue = ' '): string
+    public function getSenderNameFromArguments(Mail $mail, $default = null, string $glue = ' ', bool $useDefaultConfiguration = false): string
     {
         $name = '';
         foreach ($mail->getAnswers() as $answer) {
@@ -437,8 +437,10 @@ class MailRepository extends AbstractRepository
             }
         }
 
-        if (empty($name) && !empty(ConfigurationUtility::getDefaultMailFromName())) {
-            $name = ConfigurationUtility::getDefaultMailFromName();
+        if ($useDefaultConfiguration) {
+            if (empty($name) && !empty(ConfigurationUtility::getDefaultMailFromName())) {
+                $name = ConfigurationUtility::getDefaultMailFromName();
+            }
         }
 
         if (!trim($name)) {

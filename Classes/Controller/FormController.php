@@ -416,7 +416,11 @@ class FormController extends AbstractController
         // (test) mail to sender (is not necessary, if double optin is being used)
         if (!$hasOptin) {
             try {
-                if ($this->mailRepository->getSenderMailFromArguments($mail)) {
+                $subject = $this->settings['sender']['subject'] ?? '';
+                if ($this->isSenderMailEnabled()
+                    && $this->mailRepository->getSenderMailFromArguments($mail, '')
+                    && $subject
+                ) {
                     $mailPreflight = GeneralUtility::makeInstance(
                         SendSenderMailPreflight::class,
                         $this->settings,
@@ -452,7 +456,8 @@ class FormController extends AbstractController
 
         // mail to receiver
         try {
-            if ($this->isReceiverMailEnabled()) {
+            $receiverSubject = $this->settings['receiver']['subject'] ?? '';
+            if ($this->isReceiverMailEnabled() && $receiverSubject) {
                 $mailPreflight = GeneralUtility::makeInstance(
                     SendReceiverMailPreflight::class,
                     $this->settings,
@@ -488,13 +493,17 @@ class FormController extends AbstractController
                 $this->conf,
                 $this->request
             );
-            $mailPreflight->sendToSenderReceiverMailFailed($mail, 'E-Mail to receiver failed');
+            $mailPreflight->sendToSenderReceiverMailFailed($mail, '');
             return;
         }
 
         // (confirmation) mail to sender
         try {
-            if ($this->isSenderMailEnabled() && $this->mailRepository->getSenderMailFromArguments($mail)) {
+            $subject = $this->settings['sender']['subject'] ?? '';
+            if ($this->isSenderMailEnabled()
+                && $this->mailRepository->getSenderMailFromArguments($mail, '')
+                && $subject
+            ) {
                 $mailPreflight = GeneralUtility::makeInstance(
                     SendSenderMailPreflight::class,
                     $this->settings,

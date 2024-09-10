@@ -414,6 +414,7 @@ class FormController extends AbstractController
 
 
         // (test) mail to sender (is not necessary, if double optin is being used)
+        /*
         if (!$hasOptin) {
             try {
                 $subject = $this->settings['sender']['subject'] ?? '';
@@ -453,8 +454,10 @@ class FormController extends AbstractController
                 return;
             }
         }
+        */
 
         // mail to receiver
+        $mailToReceiverError = false;
         try {
             $receiverSubject = $this->settings['receiver']['subject'] ?? '';
             if ($this->isReceiverMailEnabled() && $receiverSubject) {
@@ -469,15 +472,20 @@ class FormController extends AbstractController
                 }
             }
         } catch (Throwable $exception) {
+            $mailToReceiverError = true;
             $logger = ObjectUtility::getLogger(__CLASS__);
             $logger->critical('Mail could not be sent', [$exception->getMessage()]);
 
             if ($langUid === 0) {
                 $message = 'Fataler Fehler: Die E-Mail an den Empfänger konnte nicht geschickt werden!'
-                . ' Häufig deutet dies auf eine fehlerhafte Konfiguration hin. Bitte nehmen Sie mit der auf der Formularseite genannten Personen Kontakt auf.';
+                    . ' In der Vergangenheit trat dies öfters auf, wenn im Formular eine fehlerhafte E-Mail eingegeben wurde.'
+                    . ' In Ausnahmefällen deutet dies auf eine fehlerhafte Konfiguration hin.'
+                    . ' Bitte füllen Sie das Formular korrekt aus oder nehmen Sie mit der auf der Formularseite genannten Personen Kontakt auf.';
             } else {
                 $message = 'Fatal error: Email to receiver could not be sent!'
-                    . ' Often, this means that the form was configured incorrectly. Please notify the persons listed as contact on this webpage';
+                    . ' Usually, this means that you entered an incorrect email in the form and the mail cannot be sent using the incorrect "From" email adddress.'
+                    . ' In rare cases this means that the form was configured incorrectly.'
+                    . ' Please fill out the form correctly or contact the persons listed as contact on this webpage.';
             }
             $this->addFlashMessage(
                 $message,
@@ -486,14 +494,22 @@ class FormController extends AbstractController
             );
             $this->messageClass = 'error';
 
-            // send error notification email
-            $mailPreflight = GeneralUtility::makeInstance(
-                SendSenderMailPreflight::class,
-                $this->settings,
-                $this->conf,
-                $this->request
-            );
-            $mailPreflight->sendToSenderReceiverMailFailed($mail, '');
+            $mailToReceiverError = true;
+        }
+
+        if ($mailToReceiverError) {
+            try {
+                // send error notification email
+                $mailPreflight = GeneralUtility::makeInstance(
+                    SendSenderMailPreflight::class,
+                    $this->settings,
+                    $this->conf,
+                    $this->request
+                );
+                $mailPreflight->sendToSenderReceiverMailFailed($mail, '');
+            } catch (\Throwable $e) {
+                // do nothing, we already logged error and added flash message
+            }
             return;
         }
 

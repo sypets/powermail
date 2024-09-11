@@ -301,6 +301,7 @@ class FormController extends AbstractController
      */
     public function createAction(Mail $mail, string $hash = ''): ResponseInterface
     {
+
         /** @var SiteLanguage|null $language */
         $language = $this->request->getAttributes()['language'] ?? null;
         $langUid = 0;
@@ -308,6 +309,9 @@ class FormController extends AbstractController
             $langUid = $language->getLanguageId();
         }
 
+        if ($mail->getUid() !== null && !HashUtility::isHashValid($hash, $mail)) {
+            return (new ForwardResponse('form'))->withoutArguments();
+        }
         $event = GeneralUtility::makeInstance(FormControllerCreateActionBeforeRenderViewEvent::class, $mail, $hash, $this);
         $this->eventDispatcher->dispatch($event);
         $mail = $event->getMail();

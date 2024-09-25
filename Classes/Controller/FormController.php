@@ -362,7 +362,7 @@ class FormController extends AbstractController
                         Prüfen Sie bitte, ob Sie die korrekte E-Mail Adresse eingegeben haben und schicken das Formular erneut ab!',
                         $mail->getSenderMail());
                     */
-                    $message = 'Es konnte keine E-Mail an <%s> geschickt werden.
+                    $message = 'Fataler Fehler: Es konnte keine E-Mail an den Formularausfüller zur Überprüfung der Email-Adresse (double-optin) geschickt werden.
                         Prüfen Sie bitte, ob Sie die korrekte E-Mail Adresse eingegeben haben und schicken das Formular erneut ab!';
                 } else {
                     /*
@@ -370,7 +370,7 @@ class FormController extends AbstractController
                         Please check if you entered the correct E-Mail address and submit the form again!',
                         $mail->getSenderMail());
                     */
-                    $message = 'An E-Mail to <%s> could not be sent.
+                    $message = 'Fataler Fehler: An E-Mail could not be sent to sender for confirmation of email address (double-optin).
                         Please check if you entered the correct E-Mail address and submit the form again!';
                 }
 
@@ -493,7 +493,7 @@ class FormController extends AbstractController
 
             if ($langUid === 0) {
                 $message = 'Fataler Fehler: Die E-Mail an den Empfänger konnte nicht geschickt werden!'
-                    . ' In der Vergangenheit trat dies öfters auf, wenn im Formular eine fehlerhafte E-Mail eingegeben wurde.'
+                    . ' In der Vergangenheit trat dies öfters auf, wenn im Formular eine fehlerhafte E-Mail (als Absender) eingegeben wurde.'
                     . ' In Ausnahmefällen deutet dies auf eine fehlerhafte Konfiguration hin.'
                     . ' Bitte füllen Sie das Formular korrekt aus oder nehmen Sie mit der auf der Formularseite genannten Personen Kontakt auf.';
             } else {
@@ -554,9 +554,16 @@ class FormController extends AbstractController
                 $message = sprintf('Es konnte keine Bestätigungs-E-Mail an den Formularausfüller <%s> geschickt werden!',
                     $mail->getSenderMail());
                 */
+                $message = 'Fataler Fehler: Es konnte keine Bestätigungs-E-Mail an den Formularausfüller geschickt werden!'
+                    . ' Bitte prüfen Sie, ob Sie Ihre E-Mail im Formular korrekt eingegeben haben und schicken es ggf. erneut hab.'
+                ;
             } else {
-                $message = sprintf('A confirmation E-Mail could not be sent to the email given in the form <%s>!',
+                /*
+                $message = sprintf('Fatal error: A confirmation E-Mail could not be sent to the email given in the form <%s>!',
                     $mail->getSenderMail());
+                */
+                $message = 'Fatal error: A confirmation E-Mail could not be sent to the email given in the form!'
+                    . ' Please check if you filled out your email correctly in the form.';
             }
             $this->addFlashMessage(
                 $message,

@@ -354,13 +354,24 @@ class FormController extends AbstractController
                 $this->view->assign('optinActive', true);
             } catch (\Throwable $e) {
                 if ($langUid === 0) {
+                    // 25.09.2024 Sybille Peters E-Mail Adresse nicht anzeigen, es wird ggf. eine falsche email angezeigt,
+                    // wenn Fluid template nicht gefunden werden konnte (wird mail nicht initialisiert????)
+                    // https://gitlab.uni-oldenburg.de/it-dienste/typo3/typo3-uol.de/-/issues/1224
+                    /*
                     $message = sprintf('Es konnte keine E-Mail an <%s> geschickt werden.
                         Prüfen Sie bitte, ob Sie die korrekte E-Mail Adresse eingegeben haben und schicken das Formular erneut ab!',
                         $mail->getSenderMail());
+                    */
+                    $message = 'Es konnte keine E-Mail an <%s> geschickt werden.
+                        Prüfen Sie bitte, ob Sie die korrekte E-Mail Adresse eingegeben haben und schicken das Formular erneut ab!';
                 } else {
+                    /*
                     $message = sprintf('An E-Mail to <%s> could not be sent.
                         Please check if you entered the correct E-Mail address and submit the form again!',
                         $mail->getSenderMail());
+                    */
+                    $message = 'An E-Mail to <%s> could not be sent.
+                        Please check if you entered the correct E-Mail address and submit the form again!';
                 }
 
                 $this->addFlashMessage(
@@ -539,8 +550,10 @@ class FormController extends AbstractController
             $logger->critical('Confirmation Mail to sender could not be sent', [$exception->getMessage()]);
 
             if ($langUid === 0) {
+                /*
                 $message = sprintf('Es konnte keine Bestätigungs-E-Mail an den Formularausfüller <%s> geschickt werden!',
                     $mail->getSenderMail());
+                */
             } else {
                 $message = sprintf('A confirmation E-Mail could not be sent to the email given in the form <%s>!',
                     $mail->getSenderMail());

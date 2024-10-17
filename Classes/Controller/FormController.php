@@ -90,6 +90,8 @@ class FormController extends AbstractController
                 'ttContentData' => $this->contentObject->data,
                 'messageClass' => $this->messageClass,
                 'action' => ($this->settings['main']['confirmation'] ? 'checkConfirmation' : 'checkCreate'),
+                //'languageIso' => $GLOBALS['TYPO3_REQUEST']->getAttribute('language')->getLocale()->getLanguageCode(),
+                'languageIso' => $this->request->getAttribute('language')->getLocale()->getLanguageCode(),
             ]
         );
 

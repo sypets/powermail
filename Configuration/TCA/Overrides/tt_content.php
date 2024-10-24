@@ -11,7 +11,9 @@ ExtensionManagementUtility::addPiFlexFormValue(
     'powermail_pi1'
 );
 
-$plugins = ['Pi1', 'Pi2', 'Pi3', 'Pi4'];
+// SP: deactivate FE plugins for security reasons
+//$plugins = ['Pi1', 'Pi2', 'Pi3', 'Pi4'];
+$plugins = ['Pi1'];
 
 foreach ($plugins as $plugin) {
     $CType = 'powermail_' . strtolower($plugin);

@@ -15,11 +15,6 @@ call_user_func(function () {
     $uncachedFormActions .= ', checkCreate, create, checkConfirmation, confirmation, optinConfirm, marketing, disclaimer';
 
 
-/*
- * SP: Remove FE plugins for security reasons
- *
- */
-    /*
     \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
         'Powermail',
         'Pi1',
@@ -32,6 +27,13 @@ call_user_func(function () {
         ],
         \TYPO3\CMS\Extbase\Utility\ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT
     );
+
+    /*
+     * SP: Remove FE plugins for security reasons
+     *
+     */
+
+    /*
 
     \TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
         'Powermail',

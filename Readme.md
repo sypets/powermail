@@ -1,3 +1,15 @@
+Angepasste Version in UOL Gitlab!
+
+Zum Ändern jedes Mal eine neue Versionsnummber generieren und tag
+pushen.
+Installieren von dev-main klappt nicht, da traw/powermailcaptcha eine
+Version ^12.0 verlangt.
+
+    git add .;git commit -m "v12.5.10"
+    git tag v12.5.10
+    git push origin v12.5.10
+
+
 # TYPO3 Extension powermail
 
 Powermail is a well-known, editor-friendly, powerful

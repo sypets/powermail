@@ -311,6 +311,17 @@
 											</dd>
 										</dl>
 									</f:if>
+									<f:if condition="{mail.deletionTimestamp}">
+                                                                                <dl class="powermail_listbe_details_dl powermail_listbe_details_dl_additional">
+                                                                                        <dt>
+                                                                                                <strong>Löschung ab:</strong>
+                                                                                        </dt>
+                                                                                        <dd>
+												<f:format.date format="d.m.Y" >{mail.deletionTimestamp}</f:format.date>
+                                                                                        </dd>
+                                                                                </dl>
+                                                                        </f:if>
+	
 								</f:if>
 							</div>
 						</td>

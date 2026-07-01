@@ -387,7 +387,7 @@ class SendMailService
 
         /** @var SendMailServiceCreateEmailBodyEvent $event */
         $event = $this->eventDispatcher->dispatch(
-            GeneralUtility::makeInstance(SendMailServiceCreateEmailBodyEvent::class, $standaloneView, $email, $this)
+            GeneralUtility::makeInstance(SendMailServiceCreateEmailBodyEvent::class, $standaloneView, $email, $this, $this->request)
         );
         $body = $event->getStandaloneView()->render();
         $this->mail->setBody($body);

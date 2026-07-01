@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace In2code\Powermail\Events;
 
 use In2code\Powermail\Domain\Service\Mail\SendMailService;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Extbase\Mvc\Request;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 
 final class SendMailServiceCreateEmailBodyEvent
@@ -24,15 +26,21 @@ final class SendMailServiceCreateEmailBodyEvent
     protected SendMailService $sendMailService;
 
     /**
+     * @var ServerRequestInterface|null
+     */
+    private ?ServerRequestInterface $request;
+
+    /**
      * @param StandaloneView $standaloneView
      * @param array $email
      * @param SendMailService $sendMailService
      */
-    public function __construct(StandaloneView $standaloneView, array $email, SendMailService $sendMailService)
+    public function __construct(StandaloneView $standaloneView, array $email, SendMailService $sendMailService, ?ServerRequestInterface $request)
     {
         $this->standaloneView = $standaloneView;
         $this->email = $email;
         $this->sendMailService = $sendMailService;
+        $this->request = $request;
     }
 
     /**
@@ -77,5 +85,13 @@ final class SendMailServiceCreateEmailBodyEvent
     public function getSendMailService(): SendMailService
     {
         return $this->sendMailService;
+    }
+
+    /**
+     * @return ServerRequestInterface|null
+     */
+    public function getRequest(): ?ServerRequestInterface
+    {
+        return $this->request;
     }
 }
